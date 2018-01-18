@@ -1,17 +1,12 @@
----
-title: "README"
-author: "Ramkishan Panthena"
-date: "October 3, 2017"
-output: 
-  md_document:
-    variant: markdown_github
----
-# Step 1: Creating the dataset
+Step 1: Creating the dataset
+============================
 
-## Simulate N=100 values of $X_{i}$, distributed Uniformly on interval (-2,2). Simulate the values of $Y_i$ = 2+3$X_i$ +$\epsilon_i$, where $\epsilon_i$ is drawn from N(0; 4). Estimate the slope of linear regression using least squares. How close is it to the truth?
+Simulate N=100 values of *X*<sub>*i*</sub>, distributed Uniformly on interval (-2,2). Simulate the values of *Y*<sub>*i*</sub> = 2+3*X*<sub>*i*</sub> +*ϵ*<sub>*i*</sub>, where *ϵ*<sub>*i*</sub> is drawn from N(0; 4). Estimate the slope of linear regression using least squares. How close is it to the truth?
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-We need to create a simulated dataset. 
-```{r, message=FALSE}
+We need to create a simulated dataset.
+
+``` r
 set.seed(123)
 X <- runif(100, -2, 2)
 epsilon <- rnorm(n = 100, mean = 0, sd = 4)
@@ -25,19 +20,20 @@ coeff = coefficients(lm.fit)
 
 coeff
 ```
-Above are the slope and intercept.
-The equation of line is given is -
 
-```{r, message=FALSE}
+    ## (Intercept)           X 
+    ##    1.784498    2.910169
+
+Above are the slope and intercept. The equation of line is given is -
+
+``` r
 # equation of the line : 
 eq = paste0("y = ", round(coeff[2],1), "*x + ", round(coeff[1],1))
-
 ```
 
-\newpage
 Let us plot a graph of the model.
 
-```{r, message=FALSE}
+``` r
 # plot
 par(mfrow = c(1,1))
 plot(dataset, main = eq)
@@ -45,19 +41,21 @@ abline(lm.fit, col = "blue")
 abline(2, 3, col = "red")
 ```
 
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-3-1.png)
+
 The red line represents the true relationship, f(X) = 2 + 3X, which is the population regression line. The blue line is the least squares line based on the observed data.
 
 We can see that the least squares line is quite close to the population regression line
 
+Step 2: Implementing Batch Gradient Descent
+===========================================
 
-\newpage
-# Step 2: Implementing Batch Gradient Descent
-
-## Implement batch gradient descent and stochastic gradient descent to estimate the slope and the intercept, as function of the learning rate $\alpha$. Stop the iterations when the change in the parameter between two consecutive iterations is less than 0.1, or when the number of iterations exceeds a large number (say, 1000).
+Implement batch gradient descent and stochastic gradient descent to estimate the slope and the intercept, as function of the learning rate *α*. Stop the iterations when the change in the parameter between two consecutive iterations is less than 0.1, or when the number of iterations exceeds a large number (say, 1000).
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 We will first implement Batch Gradient Descent.
 
-```{r, message=FALSE}
+``` r
 batchGD <- function(alpha, X, Y, conv_threshold, max_iterations) {
   
   # Add a column of 1's to the original matrix for the intercept co-efficient
@@ -110,41 +108,51 @@ batchGD <- function(alpha, X, Y, conv_threshold, max_iterations) {
 }
 ```
 
-
 Let us try running the function for a learning rate of 0.01.
 
 The inputs to the function are -
 
-1. learning rate
+1.  learning rate
 
-2. feature matrix X
+2.  feature matrix X
 
-3. labels Y
+3.  labels Y
 
-4. Difference between old and new values for which convergence should occur
+4.  Difference between old and new values for which convergence should occur
 
-5. Maximum number of iterations
+5.  Maximum number of iterations
 
-
-```{r, message=FALSE}
+``` r
 bgd <- batchGD(0.01, X, Y, 0.0001, 1000)
 
 # Number of iterations
 bgd[1][[1]]
+```
 
+    ## [1] 520
+
+``` r
 # Mean square error
 bgd[5][[1]]
+```
 
+    ## [1] 14.73187
+
+``` r
 # Final parameters
 bgd[4][[1]]
 ```
 
-\newpage
-# Step 3: Implementing Stochastic Gradient Descent
+    ##          [,1]
+    ## [1,] 1.774660
+    ## [2,] 2.906552
+
+Step 3: Implementing Stochastic Gradient Descent
+================================================
 
 Let us now implement Stochastic Gradient Descent.
 
-```{r, message=FALSE}
+``` r
 stochasticGD <- function(alpha, X, Y, conv_threshold, max_iterations) {
   
     # Add a column of 1's to the original matrix for the intercept co-efficient
@@ -203,35 +211,46 @@ stochasticGD <- function(alpha, X, Y, conv_threshold, max_iterations) {
       j <- j + 1
     }
   }
-
 ```
 
-Let us try running Stochastic Gradient Descent for alpha = 0.01.
-The input parameters to the function as same as for Batch Gradient Descent
+Let us try running Stochastic Gradient Descent for alpha = 0.01. The input parameters to the function as same as for Batch Gradient Descent
 
-```{r, message=FALSE}
+``` r
 sgd <- stochasticGD(0.01, X, Y, 0.0001, 1000)
 
 # Number of iterations
 sgd[1][[1]]
+```
 
+    ## [1] 597
+
+``` r
 # Mean square error
 sgd[5][[1]]
+```
 
+    ## [1] 14.73589
+
+``` r
 # Final parameters
 sgd[4][[1]]
 ```
 
-\newpage
-# Step 4: Find the best learning rate
+    ##          [,1]
+    ## [1,] 1.724238
+    ## [2,] 2.929881
 
-## Consider a range of parameter $\alpha$. Estimate the parameters of the regression using batch gradient descent, and using stochastic gradient descent. Plot the estimates of the slope as function of $\alpha$. Plot the time until convergence as function of $\alpha$. Interpret the result, and suggest the best $\alpha$. [Note: try a few ranges of $\alpha$ to get meaningful results]
+Step 4: Find the best learning rate
+===================================
 
-To find the best $\alpha$, we will run batch and stochastic gradient descents for a range of $\alpha$ values. We will store their results in separate vectors.
+Consider a range of parameter *α*. Estimate the parameters of the regression using batch gradient descent, and using stochastic gradient descent. Plot the estimates of the slope as function of *α*. Plot the time until convergence as function of *α*. Interpret the result, and suggest the best *α*. \[Note: try a few ranges of *α* to get meaningful results\]
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-The $\alpha$ values will range from 0.001 to 1
+To find the best *α*, we will run batch and stochastic gradient descents for a range of *α* values. We will store their results in separate vectors.
 
-```{r, message=FALSE}
+The *α* values will range from 0.001 to 1
+
+``` r
 bgd_iterations <- double(1000)
 bgd_cost <- double(1000)
 bgd_slope <- double(1000)
@@ -256,12 +275,11 @@ for (alpha in 1:1000){
   sgd_slope[alpha] <- as.numeric(sgd[4][[1]][2])
   sgd[alpha] <- as.numeric(sgd[5])
 }
-
 ```
 
-Plot of estimates of slope for a range of $\alpha$ values
+Plot of estimates of slope for a range of *α* values
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,2))
 
 # Slope of Batch GD
@@ -276,7 +294,12 @@ plot(
   xlim = c(0, 600),
   ylim = c(-5, 5)
 )
+```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+``` r
 # Slope of Stochastic GD
 plot(
   sgd_slope,
@@ -289,12 +312,16 @@ plot(
   xlim = c(0, 600),
   ylim = c(-20, 20)
 )
-
 ```
 
-Plot of time until convergence for a range of $\alpha$ values
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
 
-```{r, message=FALSE}
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+Plot of time until convergence for a range of *α* values
+
+``` r
 par(mfrow=c(1,2))
 
 # Elapsed time of Batch GD
@@ -309,7 +336,12 @@ plot(
   xlim = c(0, 600),
   ylim = c(0, .2)
 )
+```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+``` r
 # Elapsed time of Stochastic GD
 plot(
   sgd_time,
@@ -324,9 +356,14 @@ plot(
 )
 ```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
 Plot of number of iterations for range of alpha values
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,2))
 
 # Number of iterations of Batch GD
@@ -341,7 +378,12 @@ plot(
   xlim = c(0, 1000),
   ylim = c(0, 30)
 )
+```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+``` r
 # Number of iterations of Stochastic GD
 plot(
   sgd_iterations,
@@ -356,9 +398,14 @@ plot(
 )
 ```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
 Let us also have a look at the cost factor for a range of alpha values
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,2))
 
 # Slope of Batch GD
@@ -373,7 +420,12 @@ plot(
   xlim = c(0, 600),
   ylim = c(10, 20)
 )
+```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+``` r
 # Slope of Stochastic GD
 plot(
   sgd_cost,
@@ -388,19 +440,24 @@ plot(
 )
 ```
 
+    ## Warning in plot.xy(xy, type, ...): plot type 'line' will be truncated to
+    ## first character
+
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-12-1.png)
+
 Based on these, I decided to have the following learning rates for batch and stochastic gradient descent.
 
-Batch GD - 0.850
-Stochastic GD - 0.005
+Batch GD - 0.850 Stochastic GD - 0.005
 
-\newpage
-# Step 5: Compare performance on different datasets
+Step 5: Compare performance on different datasets
+=================================================
 
-## Repeat Step 1 200 times. Each time, record the slope of the regression estimated by least squares, by batch gradient descent with best $\alpha$ from Step 3, and by stochastic gradient descent from best $\alpha$ from Step 4. Plot three histograms of these estimates, and overlay the true value. Plot the histograms of time until convergence. Comment on the results.
+Repeat Step 1 200 times. Each time, record the slope of the regression estimated by least squares, by batch gradient descent with best *α* from Step 3, and by stochastic gradient descent from best *α* from Step 4. Plot three histograms of these estimates, and overlay the true value. Plot the histograms of time until convergence. Comment on the results.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Creating a function to run the dataset 200 times and calculate regression by all three types.
 
-```{r, message=FALSE}
+``` r
 f.2d <- function(N, bgd_alpha, sgd_alpha) {
   X <- runif(N,-2, 2)
   epsilon <- rnorm(n = N, mean = 0, sd = 4)
@@ -425,12 +482,11 @@ f.2d <- function(N, bgd_alpha, sgd_alpha) {
   
   return(list(lm.time, bgd.time, sgd.time, lm.coeff, bgd.coeff, sgd.coeff))
 }
-
 ```
 
 Run the function.
 
-```{r, message=FALSE}
+``` r
 bgd_alpha <- 0.850
 sgd_alpha <- 0.005
 
@@ -451,37 +507,41 @@ for (i in 1:200){
   bgd.slope.200[i] <- output[5][[1]][2]
   sgd.slope.200[i] <- output[6][[1]][2]
 }
-
 ```
 
 Plot histogram of time for all three models
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,3))
 hist(lm.time.200, main = "Least squares method", xlab = 'Time(secs)')
 hist(bgd.time.200, main = "Batch Gradient descent", xlab = 'Time(secs)')
 hist(sgd.time.200, main = "Stochastic Gradient descent", xlab = 'Time(secs)')
 ```
 
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-15-1.png)
+
 Plot histogram of slope for all three models
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,3))
 hist(lm.slope.200, main = "Least squares method", xlab = 'Time(secs)', xlim = c(1,5))
 hist(bgd.slope.200, main = "Batch Gradient descent", xlab = 'Time(secs)', xlim = c(1,5))
 hist(sgd.slope.200, main = "Stochastic Gradient descent", xlab = 'Time(secs)', xlim = c(1,5))
 ```
 
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-16-1.png)
+
 We can see that the slope follows a normal distribution for all three methods. Thus our estimate of alpha is quite accurate.
 
-\newpage
-# Step 6: Repeat previous step with more number of observations
+Step 6: Repeat previous step with more number of observations
+=============================================================
 
-## Repeat Step 5, while changing the number of observations N to 300.
+Repeat Step 5, while changing the number of observations N to 300.
+------------------------------------------------------------------
 
 Run again for N = 300
 
-```{r, message=FALSE}
+``` r
 lm.slope.200.2 <- double(200)
 bgd.slope.200.2 <- double(200)
 sgd.slope.200.2 <- double(200)
@@ -503,19 +563,22 @@ for (i in 1:200){
 
 Plot histogram of time for all three models
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,3))
 hist(lm.time.200.2, main = "Least squares method", xlab = 'Time(secs)')
 hist(bgd.time.200.2, main = "Batch Gradient descent", xlab = 'Time(secs)')
 hist(sgd.time.200.2, main = "Stochastic Gradient descent", xlab = 'Time(secs)')
 ```
 
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-18-1.png)
+
 Plot histogram of slope for all three models
 
-```{r, message=FALSE}
+``` r
 par(mfrow=c(1,3))
 hist(lm.slope.200.2, main = "Least squares method", xlab = 'Time(secs)', xlim = c(1,5))
 hist(bgd.slope.200.2, main = "Batch Gradient descent", xlab = 'Time(secs)', xlim = c(1,5))
 hist(sgd.slope.200.2, main = "Stochastic Gradient descent", xlab = 'Time(secs)', xlim = c(1,5))
 ```
 
+![](Linear_Regression_with_Gradient_Descent_files/figure-markdown_github/unnamed-chunk-19-1.png)
